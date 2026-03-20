@@ -2,7 +2,7 @@ const express = require("express");
 const puppeteer = require("puppeteer");
 const cors = require("cors");
 const app = express();
-const { executablePath } = require('puppeteer');
+const { executablePath } = require("puppeteer");
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -11,8 +11,11 @@ app.post("/api/render-html", async (req, res) => {
   let browser;
   try {
     const { html } = req.body;
+    // Sửa đoạn khởi tạo browser:
     browser = await puppeteer.launch({
-      executablePath: executablePath(),
+      // Thay thế executablePath: executablePath() bằng đường dẫn cứng của Render
+      executablePath:
+        "/opt/render/.cache/puppeteer/chrome/linux-127.0.6533.88/chrome/linux-127.0.6533.88/chrome-linux64/chrome",
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
