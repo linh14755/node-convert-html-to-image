@@ -11,9 +11,14 @@ app.post("/api/render-html", async (req, res) => {
   try {
     const { html } = req.body;
     browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: "new",
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage", // Cực kỳ quan trọng để tiết kiệm RAM
+        "--single-process", // Chạy trong 1 tiến trình để giảm tốn tài nguyên
+      ],
     });
+
     const page = await browser.newPage();
     await page.setViewport({ width: 375, height: 800 });
     await page.setContent(html, { waitUntil: "networkidle0" });
