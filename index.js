@@ -6,6 +6,7 @@ const path = require("path");
 const satori = require("satori").default;
 const { Resvg } = require("@resvg/resvg-js");
 
+const EMPTY_STRING = "-";
 // 2. Cấu hình CORS
 app.use(
   cors({
@@ -20,30 +21,32 @@ app.use(
 // Tăng limit để nhận ảnh base64
 app.use(express.json({ limit: "10mb" }));
 
-app.post("/process-image", async (req, res) => {
+// Load fonts
+const fontRegular = fs.readFileSync(
+  path.join(__dirname, "fonts", "Roboto-Regular.ttf"),
+);
+const fontBold = fs.readFileSync(
+  path.join(__dirname, "fonts", "Roboto-Bold.ttf"),
+);
+
+app.post("/api/generate-receipt", async (req, res) => {
   try {
-    const { image } = req.body;
-    if (!image) return res.status(400).send("No image data");
+    const {
+      from,
+      to,
+      studentName,
+      classTypeLabel,
+      tutionNumber,
+      totalAttendance,
+      totalMoney,
+      attendanceDates,
+      bankName,
+      bankAccountNumber,
+    } = req.body;
 
-    const base64Data = image.replace(/^data:image\/png;base64,/, "");
-    const imageBuffer = Buffer.from(base64Data, "base64");
+    // Chuyển đổi dữ liệu ngày: Đảm bảo là mảng
+    const datesArray = Array.isArray(attendanceDates) ? attendanceDates : [];
 
-    // Trả về file ảnh
-    res.setHeader("Content-Type", "image/png");
-    res.send(imageBuffer);
-  } catch (error) {
-    res.status(500).send("Server Error");
-  }
-});
-
-const fontPath = path.join(__dirname, "fonts", "Roboto-Regular.ttf");
-const fontData = fs.readFileSync(fontPath);
-
-app.post("/generate-bill", async (req, res) => {
-  try {
-    const { name, amount, date, qrContent } = req.body;
-
-    // 2. Định nghĩa Template bằng Object (Satori)
     const svg = await satori(
       {
         type: "div",
@@ -51,97 +54,261 @@ app.post("/generate-bill", async (req, res) => {
           style: {
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            width: "500px",
-            height: "700px",
-            backgroundColor: "#f9f9f9",
-            padding: "40px",
+            width: "375px", // Fix chiều rộng chuẩn mobile
+            backgroundColor: "#fff",
             fontFamily: "Roboto",
-            border: "2px solid #ddd",
-            borderRadius: "20px",
+            // KHÔNG set height ở đây để nó tự giãn
           },
           children: [
-            {
-              type: "h2",
-              props: {
-                children: "XÁC NHẬN THANH TOÁN",
-                style: { color: "#2c3e50", marginBottom: "30px" },
-              },
-            },
+            // Header
             {
               type: "div",
               props: {
                 style: {
                   display: "flex",
                   flexDirection: "column",
-                  width: "100%",
-                  gap: "10px",
+                  alignItems: "center",
+                  backgroundColor: "#4db6ac",
+                  padding: "15px",
+                  color: "#fff",
                 },
                 children: [
                   {
                     type: "div",
-                    props: { children: `Học sinh: ${name || "N/A"}` },
-                  },
-                  {
-                    type: "div",
                     props: {
-                      children: `Số tiền: ${amount || "0"} VNĐ`,
-                      style: { fontWeight: "bold", fontSize: "24px" },
+                      children: "LỚP TOÁN CÔ HẢO",
+                      style: { fontSize: "13px", fontWeight: "bold" },
                     },
                   },
                   {
                     type: "div",
-                    props: { children: `Ngày: ${date || "Hôm nay"}` },
+                    props: {
+                      children: "PHIẾU HỌC PHÍ",
+                      style: {
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        margin: "4px 0",
+                      },
+                    },
+                  },
+                  {
+                    type: "div",
+                    props: {
+                      children: `${from ?? "?"} - ${to ?? "?"}`,
+                      style: { fontSize: "12px" },
+                    },
                   },
                 ],
               },
             },
-            // Chèn mã QR
-            {
-              type: "img",
-              props: {
-                src: "https://img.vietqr.io/image/970415-113366668888-compact.png",
-                style: {
-                  width: "180px",
-                  height: "180px",
-                  marginTop: "40px",
-                  borderRadius: "10px",
-                },
-              },
-            },
+            // Info Section
             {
               type: "div",
               props: {
-                children: "Quét mã để kiểm tra",
                 style: {
-                  marginTop: "10px",
-                  color: "#7f8c8d",
-                  fontSize: "14px",
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "16px",
+                  gap: "10px",
                 },
+                children: [
+                  renderRow("Học sinh", studentName || EMPTY_STRING, true),
+                  renderRow(
+                    `Học phí / ${classTypeLabel}`,
+                    tutionNumber || EMPTY_STRING,
+                  ),
+                  renderRow(
+                    "Số buổi học",
+                    `${totalAttendance || EMPTY_STRING} buổi`,
+                  ),
+                  {
+                    type: "div",
+                    props: {
+                      style: {
+                        borderBottom: "1px dashed #ddd",
+                        marginTop: "4px",
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+            // Total Box
+            {
+              type: "div",
+              props: {
+                style: {
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  margin: "0 16px",
+                  padding: "12px",
+                  backgroundColor: "#f0f9f8",
+                  borderRadius: "12px",
+                  border: "1px solid #b2dfdb",
+                },
+                children: [
+                  {
+                    type: "div",
+                    props: {
+                      children: "TỔNG HỌC PHÍ",
+                      style: { color: "#757575", fontSize: "13px" },
+                    },
+                  },
+                  {
+                    type: "div",
+                    props: {
+                      children: totalMoney || EMPTY_STRING,
+                      style: {
+                        color: "#00796b",
+                        fontSize: "28px",
+                        fontWeight: "bold",
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+            // Study Dates Section
+            {
+              type: "div",
+              props: {
+                style: {
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: "12px",
+                  padding: "0 16px",
+                },
+                children: [
+                  {
+                    type: "div",
+                    props: {
+                      children: "NGÀY ĐI HỌC",
+                      style: {
+                        color: "#9e9e9e",
+                        fontSize: "11px",
+                        marginBottom: "6px",
+                      },
+                    },
+                  },
+                  {
+                    type: "div",
+                    props: {
+                      style: {
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap",
+                        justifyContent: "center",
+                        gap: "6px",
+                      },
+                      children: datesArray.map((date) => ({
+                        type: "div",
+                        props: {
+                          style: {
+                            backgroundColor: "#e0f2f1",
+                            padding: "3px 8px",
+                            borderRadius: "4px",
+                            color: "#00796b",
+                            fontSize: "12px",
+                          },
+                          children: date,
+                        },
+                      })),
+                    },
+                  },
+                ],
+              },
+            },
+            // QR Section
+            {
+              type: "div",
+              props: {
+                style: {
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  margin: "16px",
+                  padding: "12px",
+                  border: "1px solid #eee",
+                  borderRadius: "10px",
+                },
+                children: [
+                  {
+                    type: "img",
+                    props: {
+                      src: `https://img.vietqr.io/image/${bankName}-${bankAccountNumber}-print.png`,
+                      style: { width: "240px", height: "310" },
+                    },
+                  },
+                  {
+                    type: "div",
+                    props: {
+                      children: "Quét mã để thanh toán",
+                      style: {
+                        fontSize: "11px",
+                        color: "#9e9e9e",
+                        marginTop: "8px",
+                      },
+                    },
+                  },
+                ],
               },
             },
           ],
         },
       },
       {
-        width: 500,
-        height: 700,
-        fonts: [{ name: "Roboto", data: fontData, weight: 400 }],
+        width: 375, // Chiều rộng fix 375px
+        // KHÔNG set height ở đây để tự động giãn theo nội dung
+        fonts: [
+          { name: "Roboto", data: fontRegular, weight: 400 },
+          { name: "Roboto", data: fontBold, weight: 700 },
+        ],
       },
     );
 
-    // 3. Render sang PNG
     const resvg = new Resvg(svg, { background: "white" });
-    const pngBuffer = resvg.render().asPng();
-
-    // 4. Trả về file ảnh
     res.setHeader("Content-Type", "image/png");
-    res.send(pngBuffer);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Lỗi server: " + error.message);
+    res.send(resvg.render().asPng());
+  } catch (err) {
+    res.status(500).send(err.message);
   }
 });
 
+// Helper function để vẽ dòng thông tin
+function renderRow(label, value, isBold = false) {
+  return {
+    type: "div",
+    props: {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        width: "100%",
+        fontSize: "15px",
+      },
+      children: [
+        {
+          type: "div",
+          props: { children: label, style: { color: "#616161" } },
+        },
+        {
+          type: "div",
+          props: {
+            children: value,
+            style: {
+              fontWeight: isBold ? "bold" : "normal",
+              color: "#212121",
+              fontSize: isBold ? "18px" : "15px",
+            },
+          },
+        },
+      ],
+    },
+  };
+}
+
 const PORT = process.env.PORT || 3232;
-app.listen(PORT, "0.0.0.0", () => console.log(`Server chạy tại port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () =>
+  console.log(`Server running on port ${PORT}`),
+);
