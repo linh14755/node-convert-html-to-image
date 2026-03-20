@@ -205,6 +205,8 @@ app.post("/api/generate-receipt", async (req, res) => {
                   alignItems: "center",
                   margin: "12px 0",
                   padding: "0 16px",
+                  borderBottom: "1px dashed #ddd",
+                  paddingBottom: 8,
                 },
                 children: [
                   {
