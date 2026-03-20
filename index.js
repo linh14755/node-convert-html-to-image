@@ -241,17 +241,6 @@ app.post("/api/generate-receipt", async (req, res) => {
                       style: { width: "240px", height: "310" },
                     },
                   },
-                  {
-                    type: "div",
-                    props: {
-                      children: "Quét mã để thanh toán",
-                      style: {
-                        fontSize: "11px",
-                        color: "#9e9e9e",
-                        marginTop: "8px",
-                      },
-                    },
-                  },
                 ],
               },
             },
