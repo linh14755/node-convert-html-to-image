@@ -2,6 +2,7 @@ const express = require("express");
 const puppeteer = require("puppeteer");
 const cors = require("cors");
 const app = express();
+const { executablePath } = require('puppeteer');
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -11,11 +12,12 @@ app.post("/api/render-html", async (req, res) => {
   try {
     const { html } = req.body;
     browser = await puppeteer.launch({
+      executablePath: executablePath(),
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage", // Cực kỳ quan trọng để tiết kiệm RAM
-        "--single-process", // Chạy trong 1 tiến trình để giảm tốn tài nguyên
+        "--disable-dev-shm-usage",
+        "--single-process",
       ],
     });
 

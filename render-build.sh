@@ -3,5 +3,6 @@
 set -o errexit
 
 npm install
-# Lệnh này cực kỳ quan trọng để Puppeteer tự tải Chrome bản Linux tương thích
-npx puppeteer browsers install chrome
+
+# Ép tải Chrome vào đúng thư mục cache của Render
+PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer npx puppeteer browsers install chrome
