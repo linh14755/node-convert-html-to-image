@@ -5,7 +5,9 @@ const app = express();
 // 2. Cấu hình CORS
 app.use(
   cors({
-    origin: [process.env.FE_URL ?? "http://localhost:3000"], // Cho phép Frontend của bạn truy cập
+    origin: process.env.FE_URL
+      ? [process.env.FE_URL, "http://localhost:3000"]
+      : "http://localhost:3000", // Cho phép Frontend của bạn truy cập
     methods: ["GET", "POST"], // Các phương thức được phép
     allowedHeaders: ["Content-Type"], // Các Header được phép
   }),
