@@ -42,6 +42,8 @@ app.post("/api/generate-receipt", async (req, res) => {
       attendanceDates,
       bankName,
       bankAccountNumber,
+      notesArray = [],
+      lessonsArray = [],
     } = req.body;
 
     // Chuyển đổi dữ liệu ngày: Đảm bảo là mảng
@@ -57,7 +59,7 @@ app.post("/api/generate-receipt", async (req, res) => {
             width: "375px", // Fix chiều rộng chuẩn mobile
             backgroundColor: "#fff",
             fontFamily: "Roboto",
-            // KHÔNG set height ở đây để nó tự giãn
+            marginBottom: 15,
           },
           children: [
             // Header
@@ -166,6 +168,30 @@ app.post("/api/generate-receipt", async (req, res) => {
                       },
                     },
                   },
+                  // QR Section
+                  {
+                    type: "div",
+                    props: {
+                      style: {
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        // margin: "16px",
+                        // padding: "12px",
+                        border: "1px solid #eee",
+                        borderRadius: "10px",
+                      },
+                      children: [
+                        {
+                          type: "img",
+                          props: {
+                            src: `https://img.vietqr.io/image/${bankName}-${bankAccountNumber}-qr_only.png`,
+                            style: { width: "80px", height: "80px" },
+                          },
+                        },
+                      ],
+                    },
+                  },
                 ],
               },
             },
@@ -177,7 +203,7 @@ app.post("/api/generate-receipt", async (req, res) => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  marginTop: "12px",
+                  margin: "12px 0",
                   padding: "0 16px",
                 },
                 children: [
@@ -220,25 +246,89 @@ app.post("/api/generate-receipt", async (req, res) => {
                 ],
               },
             },
-            // QR Section
+
+            // Note Section (Nhận xét & Lộ trình)
             {
               type: "div",
               props: {
                 style: {
                   display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  margin: "16px",
-                  padding: "12px",
-                  border: "1px solid #eee",
-                  borderRadius: "10px",
+                  flexDirection: "row", // Chia đôi theo chiều ngang
+                  padding: "0 20px",
+                  marginTop: "15px",
+                  width: "100%",
                 },
                 children: [
+                  // Cột bên trái: NHẬN XÉT
                   {
-                    type: "img",
+                    type: "div",
                     props: {
-                      src: `https://img.vietqr.io/image/${bankName}-${bankAccountNumber}-print.png`,
-                      style: { width: "240px", height: "310" },
+                      style: {
+                        display: "flex",
+                        flexDirection: "column",
+                        width: "50%",
+                        paddingRight: "10px",
+                      },
+                      children: [
+                        {
+                          type: "div",
+                          props: {
+                            children: "NHẬN XÉT",
+                            style: {
+                              fontWeight: "bold",
+                              fontSize: "13px",
+                              marginBottom: "8px",
+                            },
+                          },
+                        },
+                        ...notesArray.map((note) => ({
+                          type: "div",
+                          props: {
+                            children: `- ${note}`,
+                            style: {
+                              fontSize: "11px",
+                              color: "#333",
+                              marginBottom: "4px",
+                            },
+                          },
+                        })),
+                      ],
+                    },
+                  },
+                  // Cột bên phải: LỘ TRÌNH
+                  {
+                    type: "div",
+                    props: {
+                      style: {
+                        display: "flex",
+                        flexDirection: "column",
+                        width: "50%",
+                        paddingLeft: "10px",
+                      },
+                      children: [
+                        {
+                          type: "div",
+                          props: {
+                            children: "LỘ TRÌNH",
+                            style: {
+                              fontWeight: "bold",
+                              fontSize: "13px",
+                              marginBottom: "8px",
+                            },
+                          },
+                        },
+                        ...lessonsArray.map((lesson) => ({
+                          type: "div",
+                          props: {
+                            children: `- ${lesson}`,
+                            style: {
+                              fontSize: "11px",
+                              color: "#333",
+                              marginBottom: "4px",
+                            },
+                          },
+                        })),
+                      ],
                     },
                   },
                 ],
@@ -257,7 +347,13 @@ app.post("/api/generate-receipt", async (req, res) => {
       },
     );
 
-    const resvg = new Resvg(svg, { background: "white" });
+    const resvg = new Resvg(svg, {
+      background: "white",
+      fitTo: {
+        mode: "width",
+        value: 1125, // 375 * 3 (Tăng hẳn lên x3 để siêu nét khi zoom)
+      },
+    });
     res.setHeader("Content-Type", "image/png");
     res.send(resvg.render().asPng());
   } catch (err) {
