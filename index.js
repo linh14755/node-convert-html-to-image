@@ -249,27 +249,26 @@ app.post("/api/generate-receipt", async (req, res) => {
               },
             },
 
-            // Note Section (Nhận xét & Lộ trình)
+            // Note Section (Nhận xét & Lộ trình) - Basic
             {
               type: "div",
               props: {
                 style: {
                   display: "flex",
-                  flexDirection: "row", // Chia đôi theo chiều ngang
-                  padding: "0 20px",
-                  marginTop: "15px",
+                  flexDirection: "column",
+                  padding: "12px 20px",
+                  marginTop: "8px",
                   width: "100%",
+                  gap: "12px",
                 },
                 children: [
-                  // Cột bên trái: NHẬN XÉT
+                  // NHẬN XÉT
                   {
                     type: "div",
                     props: {
                       style: {
                         display: "flex",
                         flexDirection: "column",
-                        width: "50%",
-                        paddingRight: "10px",
                       },
                       children: [
                         {
@@ -278,34 +277,55 @@ app.post("/api/generate-receipt", async (req, res) => {
                             children: "NHẬN XÉT",
                             style: {
                               fontWeight: "bold",
-                              fontSize: "13px",
-                              marginBottom: "8px",
+                              fontSize: "12px",
+                              marginBottom: "6px",
                             },
                           },
                         },
-                        ...notesArray.map((note) => ({
+                        {
                           type: "div",
                           props: {
-                            children: `- ${note}`,
                             style: {
-                              fontSize: "11px",
-                              color: "#333",
-                              marginBottom: "4px",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "2px",
                             },
+                            children:
+                              notesArray.length > 0
+                                ? notesArray.map((note) => ({
+                                    type: "div",
+                                    props: {
+                                      children: `- ${note}`,
+                                      style: {
+                                        fontSize: "11px",
+                                        lineHeight: "1.4",
+                                      },
+                                    },
+                                  }))
+                                : [
+                                    {
+                                      type: "div",
+                                      props: {
+                                        children: "-",
+                                        style: {
+                                          fontSize: "11px",
+                                          lineHeight: "1.4",
+                                        },
+                                      },
+                                    },
+                                  ],
                           },
-                        })),
+                        },
                       ],
                     },
                   },
-                  // Cột bên phải: LỘ TRÌNH
+                  // LỘ TRÌNH
                   {
                     type: "div",
                     props: {
                       style: {
                         display: "flex",
                         flexDirection: "column",
-                        width: "50%",
-                        paddingLeft: "10px",
                       },
                       children: [
                         {
@@ -314,22 +334,45 @@ app.post("/api/generate-receipt", async (req, res) => {
                             children: "LỘ TRÌNH",
                             style: {
                               fontWeight: "bold",
-                              fontSize: "13px",
-                              marginBottom: "8px",
+                              fontSize: "12px",
+                              marginBottom: "6px",
                             },
                           },
                         },
-                        ...lessonsArray.map((lesson) => ({
+                        {
                           type: "div",
                           props: {
-                            children: `- ${lesson}`,
                             style: {
-                              fontSize: "11px",
-                              color: "#333",
-                              marginBottom: "4px",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "2px",
                             },
+                            children:
+                              lessonsArray.length > 0
+                                ? lessonsArray.map((lesson) => ({
+                                    type: "div",
+                                    props: {
+                                      children: `- ${lesson}`,
+                                      style: {
+                                        fontSize: "11px",
+                                        lineHeight: "1.4",
+                                      },
+                                    },
+                                  }))
+                                : [
+                                    {
+                                      type: "div",
+                                      props: {
+                                        children: "-",
+                                        style: {
+                                          fontSize: "11px",
+                                          lineHeight: "1.4",
+                                        },
+                                      },
+                                    },
+                                  ],
                           },
-                        })),
+                        },
                       ],
                     },
                   },
