@@ -135,66 +135,6 @@ app.post("/api/generate-receipt", async (req, res) => {
                 ],
               },
             },
-            // Total Box
-            {
-              type: "div",
-              props: {
-                style: {
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  margin: "0 16px",
-                  padding: "12px",
-                  backgroundColor: "#f0f9f8",
-                  borderRadius: "12px",
-                  border: "1px solid #b2dfdb",
-                },
-                children: [
-                  {
-                    type: "div",
-                    props: {
-                      children: "TỔNG HỌC PHÍ",
-                      style: { color: "#757575", fontSize: "13px" },
-                    },
-                  },
-                  {
-                    type: "div",
-                    props: {
-                      children: totalMoney || EMPTY_STRING,
-                      style: {
-                        color: "#00796b",
-                        fontSize: "28px",
-                        fontWeight: "bold",
-                      },
-                    },
-                  },
-                  // QR Section
-                  {
-                    type: "div",
-                    props: {
-                      style: {
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        // margin: "16px",
-                        // padding: "12px",
-                        border: "1px solid #eee",
-                        borderRadius: "10px",
-                      },
-                      children: [
-                        {
-                          type: "img",
-                          props: {
-                            src: `https://img.vietqr.io/image/${bankName}-${bankAccountNumber}-qr_only.png`,
-                            style: { width: "80px", height: "80px" },
-                          },
-                        },
-                      ],
-                    },
-                  },
-                ],
-              },
-            },
             // Study Dates Section
             {
               type: "div",
@@ -371,6 +311,66 @@ app.post("/api/generate-receipt", async (req, res) => {
                                       },
                                     },
                                   ],
+                          },
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+            // Total Box
+            {
+              type: "div",
+              props: {
+                style: {
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  margin: "0 16px",
+                  padding: "12px",
+                  backgroundColor: "#f0f9f8",
+                  borderRadius: "12px",
+                  border: "1px solid #b2dfdb",
+                },
+                children: [
+                  {
+                    type: "div",
+                    props: {
+                      children: "TỔNG HỌC PHÍ",
+                      style: { color: "#757575", fontSize: "13px" },
+                    },
+                  },
+                  {
+                    type: "div",
+                    props: {
+                      children: totalMoney || EMPTY_STRING,
+                      style: {
+                        color: "#00796b",
+                        fontSize: "28px",
+                        fontWeight: "bold",
+                      },
+                    },
+                  },
+                  // QR Section
+                  {
+                    type: "div",
+                    props: {
+                      style: {
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        // margin: "16px",
+                        // padding: "12px",
+                        border: "1px solid #eee",
+                        borderRadius: "10px",
+                      },
+                      children: [
+                        {
+                          type: "img",
+                          props: {
+                            src: `https://img.vietqr.io/image/${bankName}-${bankAccountNumber}-qr_only.png`,
+                            style: { width: "80px", height: "80px" },
                           },
                         },
                       ],
